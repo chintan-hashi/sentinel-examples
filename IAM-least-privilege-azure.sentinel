@@ -1,0 +1,18 @@
+import "tfplan"
+
+# Deny role assignments with overly permissive permissions
+deny[msg] {
+  all tfplan.resources.azurerm_role_assignment as role_assignment {
+    not all role_assignment.new.role_definition_id as role_definition_id {
+      all role_definition_id.permissions as permission {
+        not all permission.actions as action {
+          # Deny wildcard actions
+          not strings.has_prefix(action, "*") and
+          # Deny overly permissive actions
+          not strings.contains(action, "Microsoft.Authorization/*/write")
+        }
+      }
+    }
+  }
+  msg = "Role assignments must have least privilege access"
+}
