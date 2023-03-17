@@ -1,0 +1,11 @@
+import "tfplan"
+
+# Deny role assignments with roles that are not allowed
+allowed_roles = ["Contributor", "Reader", "Owner"]
+
+deny[msg] {
+  all tfplan.resources.azurerm_role_assignment as role_assignment {
+    not role_assignment.new.role_definition_name in allowed_roles
+  }
+  msg = "Role assignments must use allowed roles"
+}
